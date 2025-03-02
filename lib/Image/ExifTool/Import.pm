@@ -12,7 +12,7 @@ require Exporter;
 
 use vars qw($VERSION @ISA @EXPORT_OK);
 
-$VERSION = '1.12';
+$VERSION = '1.14';
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(ReadCSV ReadJSON);
 
@@ -80,12 +80,14 @@ sub ReadCSV($$;$$)
         }
         if (@tags) {
             # save values for each tag
+            $fileInfo{_ordered_keys_} = [ ];
             for ($i=0; $i<@vals and $i<@tags; ++$i) {
                 # ignore empty entries unless missingValue is empty too
                 next unless length $vals[$i] or defined $missingValue and $missingValue eq '';
                 # delete tag (set value to undef) if value is same as missing tag
                 $fileInfo{$tags[$i]} =
                     (defined $missingValue and $vals[$i] eq $missingValue) ? undef : $vals[$i];
+                push @{$fileInfo{_ordered_keys_}}, $tags[$i];
             }
             # figure out the file name to use
             if ($fileInfo{SourceFile}) {
@@ -98,7 +100,7 @@ sub ReadCSV($$;$$)
                 # terminate at first blank tag name (eg. extra comma at end of line)
                 last unless length $_;
                 @tags or s/^\xef\xbb\xbf//; # remove UTF-8 BOM if it exists
-                /^[-\w]+(:[-\w+]+)?#?$/ or $err = "Invalid tag name '${_}'", last;
+                /^([-_0-9A-Z]+:)*[-_0-9A-Z]+#?$/i or $err = "Invalid tag name '${_}'", last;
                 push(@tags, $_);
             }
             last if $err;
@@ -173,7 +175,7 @@ Tok: for (;;) {
         }
         # see what type of object this is
         if ($tok eq '{') {      # object (hash)
-            $rtnVal = { } unless defined $rtnVal;
+            $rtnVal = { _ordered_keys_ => [ ] } unless defined $rtnVal;
             for (;;) {
                 # read "KEY":"VALUE" pairs
                 unless (defined $key) {
@@ -189,6 +191,7 @@ Tok: for (;;) {
                     $pos = pos $$buffPt;
                     return undef unless defined $val;
                     $$rtnVal{$key} = $val;
+                    push @{$$rtnVal{_ordered_keys_}}, $key;
                     undef $key;
                 }
                 # scan to delimiting ',' or bounding '}'
@@ -345,13 +348,15 @@ option for a list of valid character sets.
 These functions return an error string, or undef on success and populate the
 database hash with entries from the CSV or JSON file.  Entries are keyed
 based on the SourceFile column of the CSV or JSON information, and are
-stored as hash lookups of tag name/value for each SourceFile.
+stored as hash lookups of tag name/value for each SourceFile.  The order
+of the keys (CSV column order or order in a JSON object) is stored as an
+ARRAY reference in a special "_ordered_keys_" element of this hash.
 
 =back
 
 =head1 AUTHOR
 
-Copyright 2003-2024, Phil Harvey (philharvey66 at gmail.com)
+Copyright 2003-2025, Phil Harvey (philharvey66 at gmail.com)
 
 This library is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

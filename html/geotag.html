@@ -39,12 +39,13 @@ is used to determine the GPS position at the time of the image, then the
 following tags are written to the image (if the corresponding information
 is available):</p>
 
-<pre>GPSLatitude     GPSLongitude       GPSAltitude          CameraElevationAngle
-GPSLatitudeRef  GPSLongitudeRef    GPSAltitudeRef       GPSDateStamp
-GPSTrack        GPSSpeed           GPSImgDirection      GPSTimeStamp
-GPSTrackRef     GPSSpeedRef        GPSImgDirectionRef   GPSPitch
-GPSCoordinates  AmbientTemperature GPSHPositioningError GPSRoll
-</pre>
+<center><table>
+<tr><td>GPSLatitude</td><td>GPSLongitude</td><td>GPSAltitude</td><td>CameraElevationAngle</td><td>GPSPitch</td></tr>
+<tr><td>GPSLatitudeRef</td><td>GPSLongitudeRef</td><td>GPSAltitudeRef</td><td>GPSDateStamp</td><td>GPSRoll</td></tr>
+<tr><td>GPSTrack</td><td>GPSSpeed</td><td>GPSImgDirection</td><td>GPSTimeStamp</td><td> </td></tr>
+<tr><td>GPSTrackRef</td><td>GPSSpeedRef</td><td>GPSImgDirectionRef</td><td>GPSHPositioningError</td><td> </td></tr>
+<tr><td>GPSCoordinates</td><td>AmbientTemperature</td><td>GPSMeasureMode</td><td>GPSDOP</td><td> </td></tr>
+</table></center>
 
 <blockquote class=lt><i>Note: GPSPitch and GPSRoll are not standard tags, and
 must be <a href="#Orient">user-defined</a>.  GPSCoordinates is written to
@@ -96,7 +97,7 @@ option, so this command is equivalent to the one above:</p>
 
 <p>Multiple GPS log files may be loaded simultaneously by using more than one
 <code>-geotag</code> option or <code>-geotag=</code> assignment in the same
-command, or by using wildcards in the filename argument of the
+command, and/or by using wildcards in the filename argument of the
 <code>-geotag</code> option.  This allows batch processing of images spanning
 different tracks with a single command.  When using wildcards the argument may
 need to be quoted on some systems to prevent shell globbing, but note that
@@ -198,10 +199,11 @@ DateTimeOriginal, CreateDate, ModifyDate, FileModifyDate</li>
 position is calculated (by interpolating between fixes in the GPS track log). 
 Unless a group is specified, exiftool writes the generated tags to the default
 groups.  If a value for <code>Geotime</code> is not given, it is taken from
-unformatted value of <code>DateTimeOriginal</code> for each image (as if
-<code>"-Geotime&lt;DateTimeOriginal#"</code> had been specified), but the value
-may be copied from any other date/time tag or set directly from a date/time
-string.</p>
+unformatted value of <code>SubSecDateTimeOriginal</code> (preferentially) or
+<code>DateTimeOriginal</code> for each image (as if
+<code>"-Geotime&lt;DateTimeOriginal#" "-Geotime&lt;SubSecDateTimeOriginal#"</code>
+had been specified), but the value may be copied from any other date/time tag or
+set directly from a date/time string.</p>
 
 <p>If the date/time tag does not include a timezone then one may be added (eg.
 <code>"-Geotime&lt;${CreateDate}-05:00"</code>), otherwise the local system time
@@ -226,11 +228,10 @@ by default), but <code>ItemList:Geotime</code>, <code>UserData:Geotime</code> or
 lines illustrating various aspects of the geotagging feature.</p>
 
 <blockquote class=prog><b>Programmers</b>:  Note that <code>Geotime</code> must always
-be specified when geotagging via the API (the default value of
-<code>DateTimeOriginal#</code> is implemented by the application).  Also,
-<code>Geotime</code> must be set after both <code>Geotag</code> and
-<code>Geosync</code> (the exiftool application reorders the assignments to
-ensure this).
+be specified when geotagging via the API (the default value is implemented by
+the application).  Also, <code>Geotime</code> must be set after both
+<code>Geotag</code> and <code>Geosync</code> (the exiftool application reorders
+the assignments to ensure this).
 </blockquote>
 
 <a name="Geolocation"></a>
@@ -283,9 +284,9 @@ columns are ignored.</p>
 <a name="E1"></a>
 <p>1. Geotag all images in the "c:\images" directory from position information in a
 GPS track log ("c:\gps logs\track.log").  Since the <code>Geotime</code> time is
-not specified, the value of <code>DateTimeOriginal#</code> is used.  Local
-system time is assumed unless <code>DateTimeOriginal#</code> contains a
-timezone:</p>
+not specified, the value of <code>SubSecDateTimeOriginal#</code> (preferentially)
+or <code>DateTimeOriginal#</code> is used.  Local system time is assumed unless
+the date/time value contains a timezone:</p>
 
 <pre>exiftool -geotag "c:\gps logs\track.log" c:\images</pre>
 
@@ -336,7 +337,7 @@ not remove all GPS tags -- to do this instead use <code>-gps:all=</code>):</p>
 
 <a name="E9"></a>
 <p>9. Geotag an image with XMP tags, using the time from
-<code>DateTimeOriginal</code>:</p>
+<code>SubSecDateTimeOriginal</code> or <code>DateTimeOriginal</code>:</p>
 
 <pre>exiftool -xmp:geotag=track.log a.jpg</pre>
 
@@ -354,7 +355,7 @@ operating systems to prevent filename expansion):</p>
 
 <a name="E12"></a>
 <p>12. Geotag from a sub-second date/time value with a sub-second time synchronization
-(only possible if the EXIF sub-second time stamps are available):</p>
+(only possible if the EXIF sub-second time stamps or time zone are available):</p>
 
 <pre>exiftool -Geotag a.log -Geosync=+13.42 "-Geotime&lt;SubSecDateTimeOriginal" dir
 </pre>
@@ -601,6 +602,10 @@ output files from a set of geotagged images, or from a geotagged video file.
 (But note that the <code>-ee3</code> option must be added to the commands below
 to extract the full track from a video file.)</p>
 
+<blockquote class=lt><i>(This is different from what is sometimes called
+"reverse geocoding", which is the <a href="geolocation.html">ExifTool Geolocation feature</a>.)</i>
+</blockquote>
+
 <a name="GPX"></a>
 <h4>Creating a GPX track log</h4>
 
@@ -759,7 +764,7 @@ forum post</a> for more useful tips about creating KML files.</p>
 
 <hr>
 <i>Created Apr 2, 2009</i><br>
-<i>Last revised Apr 23, 2024</i>
+<i>Last revised Dec 2, 2024</i>
 <p class='lf'><a href="index.html">&lt;-- Back to ExifTool home page</a></p>
 </body>
 </html>

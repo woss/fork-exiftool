@@ -432,7 +432,7 @@ T*
 0.6 0 TD
 (R)Tj
 -3 -1.1 TD
-(       Copyright 2003-2024, Phil Harvey \(philharvey66 at gmail.com\))Tj
+(       Copyright 2003-2025, Phil Harvey \(philharvey66 at gmail.com\))Tj
 0 -2.2 TD
 (       This library is free software; you can redistribute it and/or modify it)Tj
 0 -1.1 TD
@@ -486,7 +486,7 @@ T*
 0.6 0 TD
 (l\(3pm\))Tj
 -12.6 -4.4 TD
-(perl v5.18.4                      2024-01-30                          SHIFT\(1\))Tj
+(perl v5.18.4                      2024-12-30                          SHIFT\(1\))Tj
 ET
 endstream
 endobj
@@ -593,9 +593,9 @@ endobj
 endobj
 16 0 obj
 <<
-/CreationDate (D:20240724203130-04'00')
-/ModDate (D:20240724203130-04'00')
-/Producer (PSNormalizer.framework)
+/CreationDate (D:20250301165323-05'00')
+/ModDate (D:20250301165323-05'00')
+/Producer (Apple pstopdf)
 >>
 endobj
 17 0 obj
@@ -624,14 +624,14 @@ xref
 0000011446 00000 n 
 0000011474 00000 n 
 0000011608 00000 n 
-0000011740 00000 n 
+0000011731 00000 n 
 trailer
 <<
 /Size 18
 /Root 17 0 R
 /Info 16 0 R
-/ID [<dfd2a4a406727923304cafc867a7e681><dfd2a4a406727923304cafc867a7e681>]
+/ID [<bb1dadcea31c98e44a4e605e97dfe9be><bb1dadcea31c98e44a4e605e97dfe9be>]
 >>
 startxref
-11809
+11800
 %%EOF

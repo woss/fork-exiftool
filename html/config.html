@@ -90,7 +90,8 @@
         },
         <span class=com># add more user-defined EXIF tags here...</span>
     },
-    <span class=com># the <a href="geotag.html">Geotag feature</a> writes these additional GPS tags if available:</span>
+    <span class=com># the <a href="geotag.html">Geotag feature</a> writes GPSPitch and GPSRoll tags, but these
+    # aren't standard EXIF so we define custom tags here:</span>
     'Image::ExifTool::GPS::Main' =&gt; {
         <span class=com># Example 2.  GPS:GPSPitch</span>
         0xd000 =&gt; {
@@ -378,7 +379,7 @@ $Image::ExifTool::QuickTime::Keys{PREFERRED} = 3;
 <span class=com># Add user-defined cities to the Geolocation lookup</span>
 @Image::ExifTool::UserDefined::Geolocation = (
     <span class=com># (city,region,subregion,country_code,country,timezone,feature_code,population,lat,lon)</span>
-    ['Sinemorets','burgas','Obshtina Tsarevo','BG','','Europe/Sofia','PPL',400,42.06115,27.97833],
+    ['Sinemorets','Burgas','Obshtina Tsarevo','BG','','Europe/Sofia','PPL',400,42.06115,27.97833],
 );
 
 <span class=com>#------------------------------------------------------------------------------</span>

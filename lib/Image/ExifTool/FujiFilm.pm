@@ -31,7 +31,7 @@ use vars qw($VERSION);
 use Image::ExifTool qw(:DataAccess :Utils);
 use Image::ExifTool::Exif;
 
-$VERSION = '1.95';
+$VERSION = '1.96';
 
 sub ProcessFujiDir($$$);
 sub ProcessFaceRec($$$);
@@ -1252,6 +1252,28 @@ my %faceCategories = (
         ValueConv => 'my @v=reverse split(" ",$val);"@v"', # reverse to show width first
         PrintConv => '$val=~tr/ /:/; $val',
     },
+    0x117 => {
+        Name => 'RawZoomActive',
+        Format => 'int32u',
+        Count => 1,
+        PrintConv => { 0 => 'No', 1 => 'Yes' },
+    },
+    0x118 => {
+        Name => 'RawZoomTopLeft',
+        Format => 'int16u',
+        Count => 2,
+        Notes => 'relative to RawCroppedImageSize',
+        ValueConv => 'my @v=reverse split(" ",$val);"@v"', # reverse to show width first
+        PrintConv => '$val=~tr/ /x/; $val',
+    },
+    0x119 => {
+        Name => 'RawZoomSize',
+        Format => 'int16u',
+        Count => 2,
+        Notes => 'relative to RawCroppedImageSize',
+        ValueConv => 'my @v=reverse split(" ",$val);"@v"', # reverse to show width first
+        PrintConv => '$val=~tr/ /x/; $val',
+    },
     0x121 => [
         {
             Name => 'RawImageSize',
@@ -1937,7 +1959,7 @@ FujiFilm maker notes in EXIF information, and to read/write FujiFilm RAW
 
 =head1 AUTHOR
 
-Copyright 2003-2024, Phil Harvey (philharvey66 at gmail.com)
+Copyright 2003-2025, Phil Harvey (philharvey66 at gmail.com)
 
 This library is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

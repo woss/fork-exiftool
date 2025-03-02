@@ -22,7 +22,7 @@ use vars qw($VERSION %samsungLensTypes);
 use Image::ExifTool qw(:DataAccess :Utils);
 use Image::ExifTool::Exif;
 
-$VERSION = '1.57';
+$VERSION = '1.58';
 
 sub WriteSTMN($$$);
 sub ProcessINFO($$$);
@@ -957,7 +957,7 @@ my %formatMinMax = (
         Samsung models such as the Galaxy S4 and Tab S, and from the 'sefd' atom in
         HEIC images from models such as the S10+.
     },
-    '0x0001-name' => 'EmbeddedImageName', # ("DualShot_1","DualShot_2")
+    '0x0001-name' => 'EmbeddedImageName', # ("DualShot_1","DualShot_2","SingleShot")
     '0x0001' => [
         {
             Name => 'EmbeddedImage',
@@ -970,6 +970,7 @@ my %formatMinMax = (
             Groups => { 2 => 'Preview' },
             Binary => 1,
         },
+        # (have also seen the string "BOKEH" here (SM-A226B)
     ],
     '0x0100-name' => 'EmbeddedAudioFileName', # ("SoundShot_000")
     '0x0100' => { Name => 'EmbeddedAudioFile', Groups => { 2 => 'Audio' }, Binary => 1 },
@@ -1001,6 +1002,10 @@ my %formatMinMax = (
     '0x0a20-name' => 'DualCameraImageName', # ("FlipPhoto_002")
     '0x0a20' => { Name => 'DualCameraImage', Groups => { 2 => 'Preview' }, Binary => 1 },
     '0x0a30-name' => 'EmbeddedVideoType', # ("MotionPhoto_Data")
+    # Note: A duplicate of this video may be extracted as MotionPhotoVideo from
+    #       the Google trailer, but keep this copy named as EmbeddedVideoFile
+    #       for backward compatibility and to avoid confusion due to extracting
+    #       multiple tags with the same name
     '0x0a30' => { Name => 'EmbeddedVideoFile', Groups => { 2 => 'Video' }, Binary => 1 }, #forum7161
    # 0x0a41-name - seen 'BackupRestore_Data' #forum16086
    # 0x0aa1-name - seen 'MCC_Data'
@@ -1265,6 +1270,7 @@ my %formatMinMax = (
     '0x0b40' => { # (SM-N975X front camera)
         Name => 'SingleShotMeta',
         SubDirectory => { TagTable => 'Image::ExifTool::Samsung::SingleShotMeta' },
+        # (have also see the string "BOKEH_INFO" here (SM-A226B)
      },
    # 0x0b41-name - seen 'SingeShot_DepthMap_1' (Yes, "Singe") (SM-N975X front camera)
     '0x0b41' => { Name => 'SingleShotDepthMap', Binary => 1 },
@@ -1493,7 +1499,7 @@ sub ProcessSamsungMeta($$$)
     my $pos = $$dirInfo{DirStart};
     my $end = $$dirInfo{DirLen} + $pos;
     unless ($pos + 8 <= $end and substr($$dataPt, $pos, 4) eq 'DOFS') {
-        $et->Warn("Unrecognized $dirName data");
+        $et->Warn("Unrecognized $dirName data", 1);
         return 0;
     }
     my $ver = Get32u($dataPt, $pos + 4);
@@ -1716,7 +1722,7 @@ SamBlock:
                 $fixup->AddFixup(length($buff) - $offsetPos);
                 $fixup->AddFixup(length($buff) - $offsetPos + 4);
             }
-            $et->VPrint(0, "Writing Samsung trailer ($dirLen bytes)\n") if $verbose;
+            $et->VPrint(0, "  Writing Samsung trailer ($dirLen bytes)\n") if $verbose;
             Write($$dirInfo{OutFile}, $buff) or return -1;
             return 1;
         }
@@ -1760,7 +1766,7 @@ Samsung maker notes in EXIF information.
 
 =head1 AUTHOR
 
-Copyright 2003-2024, Phil Harvey (philharvey66 at gmail.com)
+Copyright 2003-2025, Phil Harvey (philharvey66 at gmail.com)
 
 This library is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

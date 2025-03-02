@@ -40,6 +40,7 @@ fmt_files/gpx.fmt
 fmt_files/gpx_wpt.fmt
 fmt_files/kml.fmt
 fmt_files/kml_track.fmt
+html/ET-256.png
 html/ExifTool.html
 html/MIE1.1-20070121.pdf
 html/Shift.html
@@ -178,6 +179,7 @@ html/TagNames/Stim.html
 html/TagNames/Text.html
 html/TagNames/Theora.html
 html/TagNames/Torrent.html
+html/TagNames/Trailer.html
 html/TagNames/Unknown.html
 html/TagNames/VCard.html
 html/TagNames/Vorbis.html
@@ -206,9 +208,16 @@ html/htmldump.html
 html/idiosyncracies.html
 html/index.html
 html/install.html
+html/markers.svg
 html/metafiles.html
 html/mistakes.html
 html/overview.png
+html/plot.html
+html/plot1.svg
+html/plot2.svg
+html/plot3.svg
+html/plot4.svg
+html/plot5.svg
 html/standards.html
 html/struct.html
 html/style.css
@@ -345,6 +354,7 @@ lib/Image/ExifTool/Lang/tr.pm
 lib/Image/ExifTool/Lang/zh_cn.pm
 lib/Image/ExifTool/Lang/zh_tw.pm
 lib/Image/ExifTool/Leaf.pm
+lib/Image/ExifTool/LigoGPS.pm
 lib/Image/ExifTool/Lytro.pm
 lib/Image/ExifTool/M2TS.pm
 lib/Image/ExifTool/MIE.pm
@@ -395,8 +405,10 @@ lib/Image/ExifTool/PhaseOne.pm
 lib/Image/ExifTool/PhotoCD.pm
 lib/Image/ExifTool/PhotoMechanic.pm
 lib/Image/ExifTool/Photoshop.pm
+lib/Image/ExifTool/Plot.pm
 lib/Image/ExifTool/PostScript.pm
 lib/Image/ExifTool/PrintIM.pm
+lib/Image/ExifTool/Protobuf.pm
 lib/Image/ExifTool/Qualcomm.pm
 lib/Image/ExifTool/QuickTime.pm
 lib/Image/ExifTool/QuickTimeStream.pl
@@ -426,6 +438,7 @@ lib/Image/ExifTool/TagNames.pod
 lib/Image/ExifTool/Text.pm
 lib/Image/ExifTool/Theora.pm
 lib/Image/ExifTool/Torrent.pm
+lib/Image/ExifTool/Trailer.pm
 lib/Image/ExifTool/Unknown.pm
 lib/Image/ExifTool/VCard.pm
 lib/Image/ExifTool/Validate.pm
@@ -824,7 +837,12 @@ t/QuickTime_14.out
 t/QuickTime_15.out
 t/QuickTime_16.out
 t/QuickTime_17.out
+t/QuickTime_18.out
+t/QuickTime_19.out
 t/QuickTime_2.out
+t/QuickTime_20.out
+t/QuickTime_21.out
+t/QuickTime_22.out
 t/QuickTime_3.out
 t/QuickTime_4.out
 t/QuickTime_5.out
@@ -936,6 +954,7 @@ t/Writer_58.out
 t/Writer_59.out
 t/Writer_6.out
 t/Writer_60.out
+t/Writer_61.out
 t/Writer_7.out
 t/Writer_9.out
 t/XISF.t
