@@ -50,7 +50,7 @@ use Image::ExifTool::Exif;
 use Image::ExifTool::GPS;
 require Exporter;
 
-$VERSION = '3.72';
+$VERSION = '3.74';
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(EscapeXML UnescapeXML);
 
@@ -3350,13 +3350,14 @@ sub PrintLensID(@)
 #------------------------------------------------------------------------------
 # Convert XMP date/time to EXIF format
 # Inputs: 0) XMP date/time string, 1) set if we aren't sure this is a date
-# Returns: EXIF date/time
+# Returns: EXIF date/time, and flag in list context if this was a standard date/time value
 sub ConvertXMPDate($;$)
 {
     my ($val, $unsure) = @_;
     if ($val =~ /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}:\d{2})(:\d{2})?\s*(\S*)$/) {
         my $s = $5 || '';           # seconds may be missing
         $val = "$1:$2:$3 $4$s$6";   # convert back to EXIF time format
+        return($val, 1) if wantarray;
     } elsif (not $unsure and $val =~ /^(\d{4})(-\d{2}){0,2}/) {
         $val =~ tr/-/:/;
     }
@@ -3539,14 +3540,19 @@ NoLoop:
                     }
                     last unless $sti;
                 }
-                # generate new tagInfo hash based on existing top-level tag
-                $tagInfo = { %$sti, Name => $flat . $$sti{Name} };
-                # be careful not to copy elements we shouldn't...
-                delete $$tagInfo{Description}; # Description will be different
-                # can't copy group hash because group 1 will be different and
-                # we need to check this when writing tag to a specific group
-                delete $$tagInfo{Groups};
-                $$tagInfo{Groups}{2} = $$sti{Groups}{2} if $$sti{Groups};
+                # use existing definition if we already added this tag
+                if ($$tagTablePtr{$tagID}) {
+                    $tagInfo = $$tagTablePtr{$tagID};
+                } else {
+                    # generate new tagInfo hash based on existing top-level tag
+                    $tagInfo = { %$sti, Name => $flat . $$sti{Name} };
+                    # be careful not to copy elements we shouldn't...
+                    delete $$tagInfo{Description}; # Description will be different
+                    # can't copy group hash because group 1 will be different and
+                    # we need to check this when writing tag to a specific group
+                    delete $$tagInfo{Groups};
+                    $$tagInfo{Groups}{2} = $$sti{Groups}{2} if $$sti{Groups};
+                }
                 last;
             }
         }
@@ -3592,13 +3598,15 @@ NoLoop:
         #} elsif (grep / /, @$props) {
         #    $$tagInfo{List} = 1;
         }
-        # save property list for verbose "adding" message unless this tag already exists
-        $added = \@tagList unless $$tagTablePtr{$tagID};
-        # if this is an empty structure, we must add a Struct field
-        if (not length $val and $$attrs{'rdf:parseType'} and $$attrs{'rdf:parseType'} eq 'Resource') {
-            $$tagInfo{Struct} = { STRUCT_NAME => 'XMP Unknown' };
+        unless ($$tagTablePtr{$tagID} and $$tagTablePtr{$tagID} eq $tagInfo) {
+            # save property list for verbose "adding" message unless this tag already exists
+            $added = \@tagList unless $$tagTablePtr{$tagID};
+            # if this is an empty structure, we must add a Struct field
+            if (not length $val and $$attrs{'rdf:parseType'} and $$attrs{'rdf:parseType'} eq 'Resource') {
+                $$tagInfo{Struct} = { STRUCT_NAME => 'XMP Unknown' } unless $$tagInfo{Struct};
+            }
+            AddTagToTable($tagTablePtr, $tagID, $tagInfo);
         }
-        AddTagToTable($tagTablePtr, $tagID, $tagInfo);
         last;
     }
     # decode value if necessary (et:encoding was used before exiftool 7.71)
@@ -3640,7 +3648,12 @@ NoLoop:
         if (($new or $fmt eq 'rational') and ConvertRational($val)) {
             $rational = $rawVal;
         } else {
-            $val = ConvertXMPDate($val, $new) if $new or $fmt eq 'date';
+            my $stdDate;
+            ($val, $stdDate) = ConvertXMPDate($val, $new) if $new or $fmt eq 'date';
+            if ($stdDate and $added) {
+                $$tagInfo{Groups}{2} = 'Time';
+                $$tagInfo{PrintConv} = '$self->ConvertDateTime($val)';
+            }
         }
         if ($$et{XmpValidate} and $fmt and $fmt eq 'boolean' and $val!~/^True|False$/) {
             if ($val =~ /^true|false$/) {
@@ -3823,7 +3836,7 @@ sub ParseXMPElement($$$;$$$$)
         for (;;) {
             my ($attr, $quote);
             if (length($attrs) < 2000) { # (do it the easy way if attributes aren't stupid long)
-                last unless $attrs =~ /(\S+)\s*=\s*(['"])/g;
+                last unless $attrs =~ /(\S+?)\s*=\s*(['"])/g;
                 ($attr, $quote) = ($1, $2);
             } else {
                 # 13.23 patch to avoid capturing tons of garbage if XMP is corrupted

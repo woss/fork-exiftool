@@ -648,7 +648,9 @@ be stored in a variety of poorly documented formats, and ExifTool does its best
 to decode these according to the <code>-charset</code> option setting.  For some
 QuickTime strings where the internal encoding is not known, ExifTool assumes a
 default encoding of MacRoman, but this may be changed with
-"<code>-charset QuickTime=CHARSET</code>".</blockquote>
+"<code>-charset QuickTime=CHARSET</code>".  When writing, ExifTool prefers
+to store as UTF&#8209;8 if possible, and converts to this from the character
+set specified by the <code>-charset</code> option (UTF&#8209;8 by default).</blockquote>
 
 <blockquote><a name="aiff"><b>AIFF</b></a>: AIFF strings are assumed to be
 stored in MacRoman, and are converted according to the <code>-charset</code>
@@ -921,7 +923,9 @@ record (ExifTool adds 2424 bytes by default, but this padding is omitted if the
 partly due to the flexibility of the XMP format which allows the information to
 be written in various styles, some of which are more compact than others (the
 <code>-z</code> option and the <a href="ExifTool.html#Compact">API Compact</a>
-settings also cause a more compact form to be written).</blockquote>
+settings also cause a more compact form to be written).  As well, the order
+of the tags in the XMP may change -- the specification doesn't dictate an order,
+and ExifTool sorts them alphabetically when writing.</blockquote>
 
 <blockquote>You may also notice that the values of some "offset" tags (like
 ThumbnailOffset and PreviewImageStart) may change when the file is rewritten. 
@@ -1076,15 +1080,15 @@ absolute offsets then this could result in corrupted makernote information when
 writing, but this is very unlikely.</blockquote>
 
 <a name="Q16"></a>
-<p>16. <b>"Why doesn't ExifTool rename my AVI files?"</b></p>
+<p>16. <b>"Why doesn't ExifTool rename my video files?"</b></p>
 
-<blockquote>By default, ExifTool only processes <u>writable file
-types</u><span class='sm'><sup>&dagger;</sup></span> when <u>any
-tag</u><span class='sm'><sup>&Dagger;</sup></span> is being written and a
-directory name is specified on the command line.  To force exiftool to process
-other files, they must either be listed on the command line by name, or be
-specified using the <code>-ext</code> or <code>-ext+</code> option, something
-like this:
+<blockquote>By default, ExifTool only processes <u>writable file types</u>
+<span class='sm'><sup>&dagger;</sup></span> when <u>any tag</u>
+<span class='sm'><sup>&Dagger;</sup></span> is being written and a directory
+name is specified on the command line, so AVI files won't be processed by
+default.  To force exiftool to process other files, they must either be listed
+on the command line by name, or be specified using the <code>-ext</code> or
+<code>-ext+</code> option, something like this:
 
 <pre><span class=blk># process AVI files in addition to other writable file types</span>
 exiftool -ext+ AVI -d pics/%Y/%m "-directory&lt;dateTimeOriginal" DIR
@@ -1100,6 +1104,14 @@ processed files (as in the first example above).  Multiple <code>-ext</code> or
 example above) to process any number of different file types, or
 <code>-ext "*"</code> may be used to process files with any extension (or none at all).
 </blockquote>
+
+<blockquote><b>Note:</b> The above commands generally still won't work for
+MOV/MP4 videos because these files typically don't contain a DateTimeOriginal
+tag. For these types of files, CreateDate should be used instead (possibly with
+the addition of <code>-api QuickTimeUTC</code> if these timestamps are based on
+UTC). Use this command to see which date/time tags are available:
+
+<pre>exiftool -time:all -a -G1 -s FILE</pre></blockquote>
 
 <blockquote class='sm'><sup>&dagger;</sup> <span class=lt>The
 <code>-listwf</code> option may be used to list the extensions of all writable
@@ -1842,7 +1854,7 @@ certain commands, but may be suppressed by adding
 <code>-api "NoWarning=No writable tags"</code> to the command if desired.</blockquote>
 
 <hr>
-<i>Last revised Feb 3, 2025</i>
+<i>Last revised Jul 23, 2025</i>
 <p class='lf'><a href="index.html">&lt;-- Back to ExifTool home page</a></p>
 </body>
 </html>

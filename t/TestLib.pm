@@ -25,7 +25,7 @@ require Exporter;
 use Image::ExifTool qw(ImageInfo);
 
 use vars qw($VERSION @ISA @EXPORT);
-$VERSION = '1.24';
+$VERSION = '1.25';
 @ISA = qw(Exporter);
 @EXPORT = qw(check writeCheck writeInfo testCompare binaryCompare testVerbose notOK done);
 
@@ -254,7 +254,7 @@ sub nearTime($$$$)
     my $t1 = Image::ExifTool::GetUnixTime($tok1, 'local') or return 0;
     my $t2 = Image::ExifTool::GetUnixTime($tok2, 'local') or return 0;
     my $td = $t2 - $t1;
-    if ($td) {
+    if (abs($td) > 0.0001) { # (allow for round-off errors in fractional seconds)
         # patch for the MirBSD leap-second unconformity
         # (120 leap seconds should cover us until _well_ into the future)
         return 0 unless $^O eq 'mirbsd' and $td < 0 and $td > -120;
@@ -349,6 +349,7 @@ sub check($$$;$$$)
             my @groups = $exifTool->GetGroup($_);
             my $groups = join ', ', @groups[0..($topGroup||2)];
             my $tagID = $exifTool->GetTagID($_);
+            $tagID =~ s/([\0-\x1f\x7f-\xff])/sprintf('\\x%.2x',ord $1)/eg;
             my $desc = $exifTool->GetDescription($_);
             print FILE "[$groups] $tagID - $desc: $val";
         } else {
